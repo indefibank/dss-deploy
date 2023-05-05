@@ -22,7 +22,7 @@ interface HopeLike {
     function hope(address guy) external;
 }
 
-contract WETH is DSToken("WETH") {
+contract WCOIN is DSToken("WCOIN") {
 }
 
 contract FakeUser {
@@ -30,21 +30,21 @@ contract FakeUser {
         DSToken(token).approve(guy);
     }
 
-    function doDaiJoin(address obj, address urn, uint wad) public {
-        DaiJoin(obj).join(urn, wad);
+    function doStblJoin(address obj, address urn, uint wad) public {
+        StblJoin(obj).join(urn, wad);
     }
 
-    function doDaiExit(address obj, address guy, uint wad) public {
-        DaiJoin(obj).exit(guy, wad);
+    function doStblExit(address obj, address guy, uint wad) public {
+        StblJoin(obj).exit(guy, wad);
     }
 
-    function doWethJoin(address obj, address gem, address urn, uint wad) public {
-        WETH(obj).approve(address(gem), uint(-1));
+    function doWcoinJoin(address obj, address gem, address urn, uint wad) public {
+        WCOIN(obj).approve(address(gem), uint(-1));
         GemJoin(gem).join(urn, wad);
     }
 
-    function doFrob(address obj, bytes32 ilk, address urn, address gem, address dai, int dink, int dart) public {
-        Vat(obj).frob(ilk, urn, gem, dai, dink, dart);
+    function doFrob(address obj, bytes32 ilk, address urn, address gem, address stbl, int dink, int dart) public {
+        Vat(obj).frob(ilk, urn, gem, stbl, dink, dart);
     }
 
     function doFork(address obj, bytes32 ilk, address src, address dst, int dink, int dart) public {
@@ -203,8 +203,8 @@ contract DssDeployTestBase is DSTest, ProxyActions {
     JugFab jugFab;
     VowFab vowFab;
     CatFab catFab;
-    DaiFab daiFab;
-    DaiJoinFab daiJoinFab;
+    StblFab stblFab;
+    StblJoinFab stblJoinFab;
     FlapFab flapFab;
     FlopFab flopFab;
     FlipFab flipFab;
@@ -217,13 +217,13 @@ contract DssDeployTestBase is DSTest, ProxyActions {
     DssDeploy dssDeploy;
 
     DSToken gov;
-    DSValue pipETH;
+    DSValue pipCOIN;
     DSValue pipCOL;
 
     MockGuard authority;
 
-    WETH weth;
-    GemJoin ethJoin;
+    WCOIN wcoin;
+    GemJoin coinJoin;
     GemJoin colJoin;
 
     Vat vat;
@@ -232,14 +232,14 @@ contract DssDeployTestBase is DSTest, ProxyActions {
     Cat cat;
     Flapper flap;
     Flopper flop;
-    Dai dai;
-    DaiJoin daiJoin;
+    StableCoin stbl;
+    StblJoin stblJoin;
     Spotter spotter;
     Pot pot;
     End end;
     ESM esm;
 
-    Flipper ethFlip;
+    Flipper coinFlip;
 
     DSToken col;
     Flipper colFlip;
@@ -260,8 +260,8 @@ contract DssDeployTestBase is DSTest, ProxyActions {
         jugFab = new JugFab();
         vowFab = new VowFab();
         catFab = new CatFab();
-        daiFab = new DaiFab();
-        daiJoinFab = new DaiJoinFab();
+        stblFab = new StblFab();
+        stblJoinFab = new StblJoinFab();
         flapFab = new FlapFab();
         flopFab = new FlopFab();
         flipFab = new FlipFab();
@@ -277,8 +277,8 @@ contract DssDeployTestBase is DSTest, ProxyActions {
             jugFab,
             vowFab,
             catFab,
-            daiFab,
-            daiJoinFab,
+            stblFab,
+            stblJoinFab,
             flapFab,
             flopFab,
             flipFab,
@@ -291,7 +291,7 @@ contract DssDeployTestBase is DSTest, ProxyActions {
 
         gov = new DSToken("GOV");
         gov.setAuthority(DSAuthority(address(new MockGuard())));
-        pipETH = new DSValue();
+        pipCOIN = new DSValue();
         pipCOL = new DSValue();
         authority = new MockGuard();
 
@@ -308,7 +308,7 @@ contract DssDeployTestBase is DSTest, ProxyActions {
 
     function deployKeepAuth() public {
         dssDeploy.deployVat();
-        dssDeploy.deployDai(99);
+        dssDeploy.deployStbl(99);
         dssDeploy.deployTaxation();
         dssDeploy.deployAuctions(address(gov));
         dssDeploy.deployLiquidator();
@@ -321,8 +321,8 @@ contract DssDeployTestBase is DSTest, ProxyActions {
         cat = dssDeploy.cat();
         flap = dssDeploy.flap();
         flop = dssDeploy.flop();
-        dai = dssDeploy.dai();
-        daiJoin = dssDeploy.daiJoin();
+        stbl = dssDeploy.stbl();
+        stblJoin = dssDeploy.stblJoin();
         spotter = dssDeploy.spotter();
         pot = dssDeploy.pot();
         end = dssDeploy.end();
@@ -330,9 +330,9 @@ contract DssDeployTestBase is DSTest, ProxyActions {
         pause = dssDeploy.pause();
         authority.permit(address(this), address(pause), bytes4(keccak256("plot(address,bytes32,bytes,uint256)")));
 
-        weth = new WETH();
-        ethJoin = new GemJoin(address(vat), "ETH", address(weth));
-        dssDeploy.deployCollateral("ETH", address(ethJoin), address(pipETH));
+        wcoin = new WCOIN();
+        coinJoin = new GemJoin(address(vat), "COIN", address(wcoin));
+        dssDeploy.deployCollateral("COIN", address(coinJoin), address(pipCOIN));
 
         col = new DSToken("COL");
         colJoin = new GemJoin(address(vat), "COL", address(col));
@@ -340,18 +340,18 @@ contract DssDeployTestBase is DSTest, ProxyActions {
 
         // Set Params
         this.file(address(vat), bytes32("Line"), uint(10000 * 10 ** 45));
-        this.file(address(vat), bytes32("ETH"), bytes32("line"), uint(10000 * 10 ** 45));
+        this.file(address(vat), bytes32("COIN"), bytes32("line"), uint(10000 * 10 ** 45));
         this.file(address(vat), bytes32("COL"), bytes32("line"), uint(10000 * 10 ** 45));
 
-        pipETH.poke(bytes32(uint(300 * 10 ** 18))); // Price 300 DAI = 1 ETH (precision 18)
-        pipCOL.poke(bytes32(uint(45 * 10 ** 18))); // Price 45 DAI = 1 COL (precision 18)
-        (ethFlip,) = dssDeploy.ilks("ETH");
+        pipCOIN.poke(bytes32(uint(300 * 10 ** 18))); // Price 300 STBL = 1 COIN (precision 18)
+        pipCOL.poke(bytes32(uint(45 * 10 ** 18))); // Price 45 STBL = 1 COL (precision 18)
+        (coinFlip,) = dssDeploy.ilks("COIN");
         (colFlip,) = dssDeploy.ilks("COL");
-        this.file(address(spotter), "ETH", "mat", uint(1500000000 ether)); // Liquidation ratio 150%
+        this.file(address(spotter), "COIN", "mat", uint(1500000000 ether)); // Liquidation ratio 150%
         this.file(address(spotter), "COL", "mat", uint(1100000000 ether)); // Liquidation ratio 110%
-        spotter.poke("ETH");
+        spotter.poke("COIN");
         spotter.poke("COL");
-        (,,uint spot,,) = vat.ilks("ETH");
+        (,,uint spot,,) = vat.ilks("COIN");
         assertEq(spot, 300 * RAY * RAY / 1500000000 ether);
         (,, spot,,) = vat.ilks("COL");
         assertEq(spot, 45 * RAY * RAY / 1100000000 ether);
