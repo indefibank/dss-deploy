@@ -6,12 +6,12 @@
 	url = https://github.com/dapphub/ds-auth
 [submodule "lib/ds-pause"]
 	path = lib/ds-pause
-	url = https://github.com/makerdao/ds-pause
+	url = https://github.com/indefibank/ds-pause
 [submodule "lib/dss"]
 	path = lib/dss
-	url = https://github.com/makerdao/dss
+	url = https://github.com/indefibank/dss
 	branch = v1.2
 [submodule "lib/esm"]
 	path = lib/esm
-	url = https://github.com/makerdao/esm
+	url = https://github.com/indefibank/esm
 	branch = v1.2
